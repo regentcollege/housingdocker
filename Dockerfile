@@ -1,51 +1,15 @@
-# Set the base image for subsequent instructions
-FROM php:8.0-apache
+FROM ruby:3-buster
 
-# Install dependencies
-RUN apt-get update && pecl install redis && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    locales \
-    zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
-    unzip \
-    git \
-    curl \
-    default-mysql-client \
-    libzip-dev \
-    libonig-dev \
-    zlib1g-dev \
-    libicu-dev \
-    g++ \
-    supervisor
+ENV APP_DIR=/var/www/housing/current
 
-	
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get -y upgrade
 
-# Install extensions
-RUN docker-php-ext-install mysqli pdo_mysql zip exif pcntl opcache bcmath
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install gd && docker-php-ext-enable opcache redis
-RUN docker-php-ext-configure intl
-RUN docker-php-ext-install intl
+RUN mkdir -p $APP_DIR
+WORKDIR $APP_DIR
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+ENV RAILS_ENV=production
 
-COPY ./config/laravel.conf /etc/apache2/sites-available/laravel.conf
-COPY ./config/laravel.php.ini /usr/local/etc/php/conf.d/laravel.php.ini
-COPY ./config/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-COPY start.sh /usr/local/bin/start
+RUN apt-get -y install git-core curl rsync zlib1g-dev build-essential default-mysql-client libssl-dev libreadline-dev libyaml-dev libsqlite3-dev sqlite3 libxml2-dev libxslt1-dev libcurl4-openssl-dev software-properties-common libffi-dev nodejs imagemagick
+RUN cd $APP_DIR; bundle config deployment production; bundle config without development test
 
-RUN mkdir -p /var/www/zoom-recordings/current/public
-
-RUN a2ensite laravel.conf && a2dissite 000-default.conf && chmod u+x /usr/local/bin/start && a2enmod rewrite
-	
-# Setup working directory
-WORKDIR /var/www/zoom-recordings
-
-CMD ["/usr/local/bin/start"]
+EXPOSE 9292
