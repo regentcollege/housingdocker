@@ -13,6 +13,5 @@ RUN apt-get -y install git-core curl rsync zlib1g-dev build-essential default-my
 RUN cd $APP_DIR; gem install bundler --version 2.2.15
 RUN bundle config build.nokogiri --use-system-libraries
 RUN bundle config deployment production; bundle config without development test
-RUN bundle install
 
 EXPOSE 9292
