@@ -1,4 +1,4 @@
-FROM ruby:3.1-buster
+FROM ruby:3.0-buster
 
 ENV APP_DIR=/var/www/housing/current
 
